@@ -1,0 +1,119 @@
+﻿@using MauiAppSample.Models;
+@using MudBlazor;
+@using System.Collections;
+
+@page "/employeeComponent"
+
+<MudThemeProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<h3>Employees</h3>
+@if (employees != null && employees.Count() > 0)
+{
+
+    <MudTable ServerData="@(new Func<TableState, Task<TableData<Employee>>>(ServerReload))"
+    Dense="true" Hover="true" @ref="table">
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">Employees</MudText>
+            <MudSpacer />
+            <MudTextField T="string" ValueChanged="@(s=>OnSearch(s))" Placeholder="Search" Adornment="Adornment.Start"
+            AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+        </ToolBarContent>
+        <HeaderContent>
+            <MudTh><MudTableSortLabel SortLabel="nr_field" T="Employee">Nr</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortLabel="sign_field" T="Employee">Sign</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortLabel="name_field" T="Employee">Name</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortLabel="position_field" T="Employee">Position</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortLabel="mass_field" T="Employee">Molar mass</MudTableSortLabel></MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Id">@context.Id</MudTd>
+            <MudTd DataLabel="Sign">@context.FirstName</MudTd>
+            <MudTd DataLabel="Name">@context.LastName</MudTd>
+            <MudTd DataLabel="Position">@context.Address</MudTd>
+            <MudTd DataLabel="Molar mass">@context.Email</MudTd>
+        </RowTemplate>
+        <NoRecordsContent>
+            <MudText>No matching records found</MudText>
+        </NoRecordsContent>
+        <LoadingContent>
+            <MudText>Loading...</MudText>
+        </LoadingContent>
+        <PagerContent>
+            <MudTablePager />
+        </PagerContent>
+    </MudTable>
+}
+@code {
+
+   
+    List<Employee> employees = new List<Employee>
+    {
+    new Employee(0,"aaa","bbbbbb","", "", "" ),
+    new Employee(1,"aaa","bbbbbb","", "", "" ),
+    new Employee(2,"aaa","bcbbbb","", "", "" ),
+    new Employee(3,"aaa","bbbbbb","", "", "" ),
+    new Employee(4,"aaa","bbbbbb","", "", "" ),
+    new Employee(5,"baa","bbcbbb","", "", "" ),
+    new Employee(6,"baa","bbbbbc","", "", "" )
+    };
+    private IEnumerable<Employee> pagedData;
+    private MudTable<Employee> table;
+
+    private int totalItems;
+    private string searchString = null;
+
+    /// <summary>
+    /// Here we simulate getting the paged, filtered and ordered data from the server
+    /// </summary>
+    private async Task<TableData<Employee>> ServerReload(TableState state)
+    {
+
+        //HttpClient httpClient = new HttpClient();
+        //IEnumerable<Employee> data = await httpClient.GetFromJsonAsync<List<Employee>>("webapi/periodictable");
+        IEnumerable<Employee> data = employees;
+        //await Task.Delay(300);
+        data = data.Where(employee =>
+        {
+            if (string.IsNullOrWhiteSpace(searchString))
+                return true;
+            if (employee.FirstName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (employee.LastName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+            if ($"{employee.Id} {employee.Address} {employee.Email}".Contains(searchString))
+                return true;
+            return false;
+        }).ToArray();
+        totalItems = data.Count();
+        switch (state.SortLabel)
+        {
+            case "id_field":
+                data = data.OrderByDirection(state.SortDirection, o => o.Id);
+                break;
+            case "firstName_field":
+                data = data.OrderByDirection(state.SortDirection, o => o.FirstName);
+                break;
+            case "name_field":
+                data = data.OrderByDirection(state.SortDirection, o => o.LastName);
+                break;
+            case "position_field":
+                data = data.OrderByDirection(state.SortDirection, o => o.Address);
+                break;
+            case "mass_field":
+                data = data.OrderByDirection(state.SortDirection, o => o.Email);
+                break;
+        }
+        //httpClient.Dispose();
+        pagedData = data.Skip(state.Page * state.PageSize).Take(state.PageSize).ToArray();
+        return new TableData<Employee>() {TotalItems = totalItems, Items = pagedData};
+    }
+
+    private void OnSearch(string text)
+    {
+        searchString = text;
+        table.ReloadServerData();
+    }
+
+}
