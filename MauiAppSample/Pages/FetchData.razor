@@ -74,7 +74,7 @@ else
 		HttpClient client = new HttpClient();
 		try
 		{
-			var requestMsg = new HttpRequestMessage(HttpMethod.Get, $"/api/weatherforecast/{DateTime.Now.ToString("yyyy-MM-dd")}");
+			var requestMsg = new HttpRequestMessage(HttpMethod.Get, $"{AuthHelper.BaseAdress}/api/weatherforecast/{DateTime.Now.ToString("yyyy-MM-dd")}");
 			requestMsg.Headers.Add("Authorization", "Bearer " + await GetJWT());
 
 			var response = await client.SendAsync(requestMsg);
@@ -108,7 +108,7 @@ else
 		HttpClient client = new HttpClient();
 		try
 		{
-			var requestMsg = new HttpRequestMessage(HttpMethod.Get, "/api/weatherforecast");
+			var requestMsg = new HttpRequestMessage(HttpMethod.Get, $"{AuthHelper.BaseAdress}/apiSveglia/weatherforecast");
 			requestMsg.Headers.Add("Authorization", "Bearer " + await GetJWT());
 
 			var response = await client.SendAsync(requestMsg);

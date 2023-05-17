@@ -34,7 +34,7 @@
 	{
 		isDisabled = true;
 		HttpClient client = new HttpClient();
-		using (var msg = await client.PostAsJsonAsync<RegModel>("/api/auth/register", reg, System.Threading.CancellationToken.None))
+		using (var msg = await client.PostAsJsonAsync<RegModel>($"{AuthHelper.BaseAdress}/api/auth/register", reg, System.Threading.CancellationToken.None))
 		{
 			if (msg.IsSuccessStatusCode)
 			{

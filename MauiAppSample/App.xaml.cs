@@ -9,18 +9,18 @@ public partial class App : Application
 		MainPage = new MainPage();
 	}
 
-    protected override void OnStart()
-    {
-        base.OnStart();
-    }
+    //protected override void OnStart()
+    //{
+    //    base.OnStart();
+    //}
 
-    protected override void OnResume()
-    {
-        base.OnResume();
-    }
+    //protected override void OnResume()
+    //{
+    //    base.OnResume();
+    //}
 
-    protected override void OnSleep()
-    {
-        base.OnSleep();
-    }
+    //protected override void OnSleep()
+    //{
+    //    base.OnSleep();
+    //}
 }

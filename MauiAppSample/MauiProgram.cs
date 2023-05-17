@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using MauiAppSample.Data;
+using MudBlazor.Services;
 
 namespace MauiAppSample;
 
@@ -24,6 +25,8 @@ public static class MauiProgram
 
 		builder.Services.AddSingleton<WeatherForecastService>();
 
-		return builder.Build();
+		builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(AuthHelper.BaseAdress) });
+        builder.Services.AddMudServices();
+        return builder.Build();
 	}
 }
