@@ -11,7 +11,7 @@
 	<DataAnnotationsValidator />
 	<ValidationSummary />
 	<div class="mb-2">
-		<InputText class="form-control" @bind-Value="user.email" placeholder="Enter Email"></InputText>
+		<InputText class="form-control" @bind-Value="user.username" placeholder="Enter Username"></InputText>
 	</div>
 	<div class="mb-2">
 		<InputText type="password" class="form-control" @bind-Value="user.password" placeholder="Enter Password"></InputText>
@@ -32,24 +32,25 @@
 		HttpClient client = new HttpClient();
 		try
 		{
-			var msg = await client.PostAsJsonAsync<LoginModel>($"{AuthHelper.BaseAdress}/api/auth/login", user, System.Threading.CancellationToken.None);
+			var msg = await client.PostAsJsonAsync<LoginModel>($"{AuthHelper.BaseAdress}/api/auth/signin", user, System.Threading.CancellationToken.None);
 
 		if (msg.IsSuccessStatusCode)
 			{
 				LoginResult result = await msg.Content.ReadFromJsonAsync<LoginResult>();
-				message = result.message;
+				//message = result.message;
 				isDisabled = false;
-				if (result.success)
-					await jsr.InvokeVoidAsync("localStorage.setItem", "user", $"{result.email};{result.jwtBearer}").ConfigureAwait(false);
-				else
-				{
-
-					Console.WriteLine(result.message);
-				}
+				//if (string.IsNullOrEmpty(result.error))
+					await jsr.InvokeVoidAsync("localStorage.setItem", "user", $"{result.email};{result.accessToken}").ConfigureAwait(false);
+				//else
+				//{
+				//	Console.WriteLine(result);
+				//}
 			}
 			else
 			{
-
+				LoginError result = await msg.Content.ReadFromJsonAsync<LoginError>();
+				message = result.message;
+				Console.WriteLine(result);
 				Console.WriteLine(msg.StatusCode);
 			}
 		}

@@ -12,7 +12,7 @@
 	<DataAnnotationsValidator />
 	<ValidationSummary />
 	<div class="mb-2">
-		<InputText class="form-control" @bind-Value="reg.email" placeholder="Enter Email"></InputText>
+		<InputText class="form-control" @bind-Value="reg.username" placeholder="Enter username"></InputText>
 	</div>
 	<div class="mb-2">
 		<InputText type="password" class="form-control" @bind-Value="reg.password" placeholder="Enter Password"></InputText>
@@ -34,22 +34,23 @@
 	{
 		isDisabled = true;
 		HttpClient client = new HttpClient();
-		using (var msg = await client.PostAsJsonAsync<RegModel>($"{AuthHelper.BaseAdress}/api/auth/register", reg, System.Threading.CancellationToken.None))
+		using (var msg = await client.PostAsJsonAsync<RegModel>($"{AuthHelper.BaseAdress}/api/auth/signup", reg, System.Threading.CancellationToken.None))
 		{
 			if (msg.IsSuccessStatusCode)
 			{
 				LoginResult result = await msg.Content.ReadFromJsonAsync<LoginResult>();
-				message = result.message;
-				if (result.success)
+				message = result.accessToken;
+				//if (string.IsNullOrEmpty(result.error))
 				{
 					message += " Please LOGIN to continue.";
 					login = "Click here to LOGIN.";
 				}
+			}
 				else
 					isDisabled = false;
-			}
 		}
 
 		client.Dispose();
 	}
 }
+

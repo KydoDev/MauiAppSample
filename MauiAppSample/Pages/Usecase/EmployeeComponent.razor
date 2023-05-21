@@ -1,7 +1,11 @@
-﻿@using MauiAppSample.Models;
+﻿@using MauiAppSample.Data;
+@using MauiAppSample.Models;
 @using MudBlazor;
 @using System.Collections;
 
+@using System.Net.Http.Json;
+@using Microsoft.JSInterop;
+@inject IJSRuntime JSRuntime;
 @page "/employeeComponent"
 
 <MudThemeProvider />
@@ -9,8 +13,15 @@
 <MudSnackbarProvider />
 
 <h3>Employees</h3>
-@if (employees != null && employees.Count() > 0)
+
+
+@if (string.IsNullOrEmpty(userdata))
 {
+	<p><a href="/login">LOGIN TO ACCESS THIS DATA</a></p>
+}
+else
+{
+
 
     <MudTable ServerData="@(new Func<TableState, Task<TableData<Employee>>>(ServerReload))"
     Dense="true" Hover="true" @ref="table">
@@ -43,21 +54,71 @@
         <PagerContent>
             <MudTablePager />
         </PagerContent>
-    </MudTable>
+        </MudTable>
+
+
+
+
+
 }
 @code {
 
-   
-    List<Employee> employees = new List<Employee>
+    string userdata;
+
+    private async Task<string> GetJWT()
     {
-    new Employee(0,"aaa","bbbbbb","", "", "" ),
-    new Employee(1,"aaa","bbbbbb","", "", "" ),
-    new Employee(2,"aaa","bcbbbb","", "", "" ),
-    new Employee(3,"aaa","bbbbbb","", "", "" ),
-    new Employee(4,"aaa","bbbbbb","", "", "" ),
-    new Employee(5,"baa","bbcbbb","", "", "" ),
-    new Employee(6,"baa","bbbbbc","", "", "" )
-    };
+        userdata = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "user").ConfigureAwait(false);
+        if (!string.IsNullOrWhiteSpace(userdata))
+        {
+            var dataArray = userdata.Split(';', 2);
+            if (dataArray.Length == 2)
+                return dataArray[1];
+        }
+        return null;
+    }
+    private List<Employee> employees;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        HttpClient client = new HttpClient();
+        try
+        {
+            var requestMsg = new HttpRequestMessage(HttpMethod.Get, $"{AuthHelper.BaseAdress}/api/employee/all/");
+            requestMsg.Headers.Add("Authorization", "Bearer " + await GetJWT());
+
+            var response = await client.SendAsync(requestMsg);
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized) // NOTE: THEN TOKEN HAS EXPIRED
+            {
+                await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "user").ConfigureAwait(false);
+                userdata = null;
+            }
+            else if (response.StatusCode == System.Net.HttpStatusCode.NoContent)
+                employees = null;
+            else if (response.IsSuccessStatusCode)
+                employees = await response.Content.ReadFromJsonAsync<List<Employee>>();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+        }
+        finally
+        {
+            client.Dispose();
+        }
+    }
+
+
+    //List<Employee> employees = new List<Employee>
+    //{
+    //new Employee(0,"aaa","bbbbbb","", "", "" ),
+    //new Employee(1,"aaa","bbbbbb","", "", "" ),
+    //new Employee(2,"aaa","bcbbbb","", "", "" ),
+    //new Employee(3,"aaa","bbbbbb","", "", "" ),
+    //new Employee(4,"aaa","bbbbbb","", "", "" ),
+    //new Employee(5,"baa","bbcbbb","", "", "" ),
+    //new Employee(6,"baa","bbbbbc","", "", "" )
+    //};
     private IEnumerable<Employee> pagedData;
     private MudTable<Employee> table;
 

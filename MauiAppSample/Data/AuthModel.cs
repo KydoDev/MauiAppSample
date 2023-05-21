@@ -9,16 +9,29 @@ namespace MauiAppSample.Data
 {
     public class LoginResult
     {
-        public string message { get; set; }
+        public int id { get; set; }
+        public string username { get; set; }
         public string email { get; set; }
-        public string jwtBearer { get; set; }
-        public bool success { get; set; }
+        public string[] roles { get; set; }
+        public string tokenType { get; set; }
+        public string accessToken { get; set; }
+
+
     }
+
+    public class LoginError
+    {
+		//only if error
+		public string path { get; set; }
+		public string error { get; set; }
+		public string message { get; set; }
+		public string status { get; set; }
+	}
     public class LoginModel
     {
-        [Required(ErrorMessage = "Email is required.")]
-        [EmailAddress(ErrorMessage = "Email address is not valid.")]
-        public string email { get; set; } // NOTE: email will be the username, too
+        [Required(ErrorMessage = "Username is required.")]
+        //[EmailAddress(ErrorMessage = "Email is not valid.")]
+        public string username { get; set; } // NOTE: email will be the username, too
 
         [Required(ErrorMessage = "Password is required.")]
         [DataType(DataType.Password)]
